@@ -1,0 +1,42 @@
+# CT Reconstruction Project - Student Package Docker Compose Services
+
+name: ct-student
+
+services:
+  # Run student's reconstruction (default)
+  run:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./data/practice:/workspace/data/practice
+      - ./results:/workspace/results
+    command: ["octave", "--no-gui", "--no-window-system", "--eval", "run_tier"]
+
+  # Run specific tier
+  run-tier:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./data/practice:/workspace/data/practice
+      - ./results:/workspace/results
+    command: ["octave", "--no-gui", "--no-window-system", "--eval", "tier=1; run_tier"]
+
+  # Development shell with bind mounts for fast iteration
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./operators:/workspace/operators:ro
+      - ./evaluation:/workspace/evaluation:ro
+      - ./utils:/workspace/utils:ro
+      - ./reconstruct.m:/workspace/reconstruct.m
+      - ./results:/workspace/results
+      - ./run_tier.m:/workspace/run_tier.m
+      - ./data/practice:/workspace/data/practice:ro
+    working_dir: /workspace
+    tty: true
+    stdin_open: true
+    command: ["bash"]

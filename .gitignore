@@ -1,0 +1,13 @@
+# Windows download metadata (WSL)
+*:Zone.Identifier
+
+# Local run outputs and submission archive
+results/
+submission.zip
+
+# Competition data is not redistributed
+data/competition/
+
+.DS_Store
+*.asv
+octave-workspace
