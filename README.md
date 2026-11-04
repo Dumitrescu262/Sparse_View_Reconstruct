@@ -8,9 +8,9 @@ I built this for the competitive project in the *Numerical Methods* (Metode Nume
 
 The scanner measures line integrals of the unknown image `x` (N² pixels) along rays at a few angles:
 
-$$
+```math
 b = A x + \eta, \qquad \eta \sim \mathcal{N}(0, \sigma^2)
-$$
+```
 
 Several things make this hard:
 
@@ -60,9 +60,9 @@ The sections below go through the tiers one at a time. Each image shows the **gr
 
 There are more measurements than unknowns, so the system is **overdetermined** and a quadratic (Tikhonov) regularizer is enough:
 
-$$
+```math
 \min_x \|Ax - b\|^2 + \lambda \|x\|^2 \;\Longleftrightarrow\; (A^\top A + \lambda I)\,x = A^\top b
-$$
+```
 
 The system is symmetric positive definite, so I solve it with a hand-written **Conjugate Gradient** solver. Each iteration applies `(AᵀA + λI)` matrix-free, as one forward projection, one back-projection and a scaled vector add.
 
@@ -84,9 +84,9 @@ The system is symmetric positive definite, so I solve it with a hand-written **C
 
 The system is now **underdetermined**. Tikhonov would blur the edges, so from this tier on I minimize a **Total Variation** regularized objective with a box constraint:
 
-$$
+```math
 \min_{x \,\in\, [x_{\min}, x_{\max}]} \;\tfrac12 \|Ax - b\|^2 \;+\; \lambda_{TV} \sum_{i} \big\|(\nabla x)_i\big\|_2
-$$
+```
 
 TV (Rudin–Osher–Fatemi) favours images with a sparse gradient. It removes noise and streak artefacts but keeps sharp edges. The objective is non-smooth, so I use the **Primal-Dual Hybrid Gradient** algorithm (Chambolle–Pock). It splits the problem into simple steps that each have a closed form:
 
@@ -130,11 +130,11 @@ This is the hardest sampling ratio: less than a quarter of the measurements need
 
 **Adaptive λ: piecewise-constant vs. smooth phantoms.** This is where the two phantom types differ the most. Too much TV on a smooth phantom gives the *staircase effect*. Too little on a piecewise-constant phantom leaves noise in the flat regions. Instead of one compromise value, `λ` is adjusted at every PDHG iteration (in all of tiers 2–4) from the current image:
 
-$$
-c = \frac{\operatorname{mean}|\nabla \bar x|}{\max|\nabla \bar x|}, \qquad
+```math
+c = \frac{\text{mean}|\nabla \bar x|}{\max|\nabla \bar x|}, \qquad
 \lambda_k = \max\big(\lambda_{TV}\,(1 - a\,c),\; 0.05\,\lambda_{TV}\big), \qquad
 a = 0.85\,(1 - \min(1, 15\sigma))
-$$
+```
 
 - In a **piecewise-constant** image, the gradient is zero almost everywhere and large on a few edges, so `c` is small and `λ` stays close to full strength.
 - In a **smooth-gradient** image, the gradient is spread over the whole image, so `c` grows and `λ` is reduced, which preserves the fine shading.
